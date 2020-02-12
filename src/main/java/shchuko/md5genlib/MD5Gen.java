@@ -40,6 +40,18 @@ public class MD5Gen {
             6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
     };
 
+    /** Input data in MD5 calculation format (with appended 1-bit, padding and length) */
+    private ArrayList<Integer> words = new ArrayList<>();
+
+    /** MD5 calculation buffer A */
+    private int a = A_CONST;
+    /** MD5 calculation buffer B */
+    private int b = B_CONST;
+    /** MD5 calculation buffer C */
+    private int c = C_CONST;
+    /** MD5 calculation buffer D */
+    private int d = D_CONST;
+
 
     /**
      * Generate MD5-hash for input bytes
@@ -87,17 +99,6 @@ public class MD5Gen {
         return sb.toString();
     }
 
-    /** Input data in MD5 calculation format (with appended 1-bit, padding and length) */
-    private ArrayList<Integer> words = new ArrayList<>();
-
-    /** MD5 calculation buffer A */
-    private int a = A_CONST;
-    /** MD5 calculation buffer B */
-    private int b = B_CONST;
-    /** MD5 calculation buffer C */
-    private int c = C_CONST;
-    /** MD5 calculation buffer D */
-    private int d = D_CONST;
 
     /**
      * Appends byte to {@link #words} list
