@@ -63,8 +63,12 @@ public class MD5Gen {
      */
     public MD5Gen update(byte[] input) {
         resetAll();
-        fillWordsArrayFromBytes(input);
+
+        int nextByteNum = fillWordsArrayFromBytes(input);
+        nextByteNum = appendAlignedBitToWords(nextByteNum);
+        appendZeroPadding(input.length + 1, nextByteNum);
         appendLength(input.length * 8);
+
         calculate();
         return this;
     }
@@ -76,7 +80,6 @@ public class MD5Gen {
     public MD5HashResult getHashResult() {
         return new MD5HashResult(a, b, c, d);
     }
-
 
     /**
      * Get generated MD5-hash value in bytes representation. To generate hash invoke {@link #update(byte[])}
@@ -102,54 +105,76 @@ public class MD5Gen {
     }
 
     /**
-     * Appends byte to {@link #words} list
+     * Append byte to {@link #words} list
      * @param byteVal Byte to append
-     * @param byteNum Byte place number in int32 variable
-     * @return New value for byteNum (passed as argument)
+     * @param nextByteNum Byte place number in int32 variable
+     * @return New value for nextByteNum (passed as argument)
      */
-    private int appendByteToWords(byte byteVal, int byteNum) {
-        if (byteNum == 0) {
+    int addSingleByteToWords(byte byteVal, int nextByteNum) {
+        if (nextByteNum == 0) {
             words.add(byteVal & 0xFF);
         } else {
             int lastIndex = words.size() - 1;
-            int value = words.get(lastIndex) | ((byteVal & 0xFF) << 8 * byteNum);
+            int value = words.get(lastIndex) | ((byteVal & 0xFF) << 8 * nextByteNum);
             words.set(lastIndex, value);
         }
 
-        return byteNum == 3 ? 0 : byteNum + 1;
+        return nextByteNum == 3 ? 0 : nextByteNum + 1;
     }
 
     /**
-     * Fill {@link #words} list from bytes array, add zero-padding (part of MD5 algorithm)
-     * @param bytes Input bytes
+     * Append bytes to {@link #words} list
+     * @param bytes Bytes to append
+     * @param nextByteNum Second argument for {@link #addSingleByteToWords(byte, int)}
+     * @return new value for nextByteNum (passed as argument)
      */
-    private void fillWordsArrayFromBytes(byte[] bytes) {
-        // Byte of word we're filling next [3..0]. Starting from the 3rd
-        int byteNum = 0;
-        // Storing input data
+    int appendBytesToWordsArray(byte[] bytes, int nextByteNum) {
+        int newNextByteNum = nextByteNum;
         for (byte b : bytes) {
-            byteNum = appendByteToWords(b,
-                    byteNum);
+            newNextByteNum = addSingleByteToWords(b, newNextByteNum);
         }
+        return newNextByteNum;
+    }
 
-        // Adding 1-bit to the end, padded with zeroes to full byte
+    /**
+     * Fill {@link #words} list from bytes array
+     * @param bytes Bytes to fill
+     * @return new value for nextByteNum (second argument for {@link #addSingleByteToWords(byte, int)})
+     */
+    int fillWordsArrayFromBytes(byte[] bytes) {
+        words.clear();
+        return appendBytesToWordsArray(bytes, 0);
+    }
+
+    /**
+     * Append 0b10000000 byte to {@link #words} list
+     * @param nextByteNum Second argument for {@link #addSingleByteToWords(byte, int)}
+     * @return new value for nextByteNum (passed as argument)
+     */
+    int appendAlignedBitToWords(int nextByteNum) {
         final byte ONE_PADDED_BIT = (byte) 0b10000000;
-        byteNum = appendByteToWords(ONE_PADDED_BIT, byteNum);
+        return addSingleByteToWords(ONE_PADDED_BIT, nextByteNum);
+    }
 
-        // Adding zero padding
-        long bytesFilled = bytes.length + 1;
+    /**
+     * Append zero padding to {@link #words} list
+     * @param bytesFilled Bytes already added to words
+     * @param nextByteNum Second argument for {@link #addSingleByteToWords(byte, int)}
+     */
+    void appendZeroPadding(int bytesFilled, int nextByteNum) {
         final byte ZERO_BYTE = 0;
+        int newNextByteNum = nextByteNum;
         while (bytesFilled < (448 / 8) || (bytesFilled - (448 / 8)) % 512 != 0) {
-            byteNum = appendByteToWords(ZERO_BYTE, byteNum);
+            newNextByteNum = addSingleByteToWords(ZERO_BYTE, newNextByteNum);
             ++bytesFilled;
         }
     }
 
     /**
-     * Append length value to {@link #words} (part of MD5 algorithm)
+     * Append length value to {@link #words}
      * @param length INT64 length value
      */
-    private void appendLength(long length)  {
+    void appendLength(long length)  {
         words.add((int) length);
         words.add((int) (length >>> (4 * 8)));
     }
@@ -157,7 +182,7 @@ public class MD5Gen {
     /**
      * Reset calculation buffers {@link #a}, {@link #b}, {@link #c}, {@link #d}
      */
-    private void resetBuffers() {
+    void resetBuffers() {
         a = A_CONST;
         b = B_CONST;
         c = C_CONST;
@@ -168,7 +193,7 @@ public class MD5Gen {
      * Reset calculation buffers {@link #a}, {@link #b}, {@link #c}, {@link #d}, empty {@link #words} list.
      * Prepare for new calculation
      */
-    private void resetAll() {
+    void resetAll() {
         resetBuffers();
         words.clear();
     }
@@ -177,7 +202,7 @@ public class MD5Gen {
      * Calculate MD5 hash from {@link #words}. Result stored in {@link #a}, {@link #b}, {@link #c}, {@link #d}.
      * (part of MD5 algorithm)
      */
-    private void calculate() {
+    void calculate() {
         for (int xBegin = 0; xBegin < words.size(); xBegin += 16) {
             int aa = a;
             int bb = b;
@@ -227,7 +252,7 @@ public class MD5Gen {
      * @param z Third argument
      * @return 'F' function result
      */
-    private static int funF(int x, int y, int z) {
+    static int funF(int x, int y, int z) {
         return (x & y) | ((~x) & z);
     }
 
@@ -238,7 +263,7 @@ public class MD5Gen {
      * @param z Third argument
      * @return 'G' function result
      */
-    private static int funG(int x, int y, int z) {
+    static int funG(int x, int y, int z) {
         return (x & z) | ((~z) & y);
     }
 
@@ -249,7 +274,7 @@ public class MD5Gen {
      * @param z Third argument
      * @return 'H' function result
      */
-    private static int funH(int x, int y, int z) {
+    static int funH(int x, int y, int z) {
         return x ^ y ^ z;
     }
 
@@ -260,7 +285,7 @@ public class MD5Gen {
      * @param z Third argument
      * @return 'I' function result
      */
-    private static int funI(int x, int y, int z) {
+    static int funI(int x, int y, int z) {
         return y ^ ((~z) | x);
     }
 }
