@@ -2,6 +2,9 @@ package shchuko.md5genlib;
 
 import java.util.ArrayList;
 
+/**
+ * MD5 hash generator
+ */
 public class MD5Gen {
     /** MD5 calculation buffer A initialisation value */
     private static final int A_CONST = 0x67452301;
@@ -67,38 +70,36 @@ public class MD5Gen {
     }
 
     /**
+     * Get hash result as {@link MD5HashResult} object
+     * @return {@link MD5HashResult} object
+     */
+    public MD5HashResult getHashResult() {
+        return new MD5HashResult(a, b, c, d);
+    }
+
+
+    /**
      * Get generated MD5-hash value in bytes representation. To generate hash invoke {@link #update(byte[])}
+     * @deprecated Use {@link #getHashResult()}.{@link MD5HashResult#getHashBytes() getHashBytes()} instead
      * @return MD5-hash value bytes
      */
+    @Deprecated
     public byte[] getHashBytes() {
-        byte[] resultBytes = new byte[16];
-        for (int i = 0; i < 4; ++i) {
-            resultBytes[i] = (byte) (a >>> 8 * i);
-            resultBytes[i + 4] = (byte) (b >>> 8 * i);
-            resultBytes[i + 8] = (byte) (c >>> 8 * i);
-            resultBytes[i + 12] = (byte) (d >>> 8 * i);
-        }
-        return resultBytes;
-
+        return getHashResult().getHashBytes();
     }
 
     /**
      * Get generated MD5-hash in HEX format.
      * To generate hash invoke {@link #update(byte[])}
-     * @param capitalCase True: capital case HEX, false: lower case HEX
+     * @deprecated Use {@link #getHashResult()}.{@link MD5HashResult#getHashHexString(boolean) getHashHexString(boolean)}
+     * instead
+     * @param upperCase True: capital case HEX, false: lower case HEX
      * @return String with HEX hash value
      */
-    public String getHashHexString(boolean capitalCase) {
-        byte[] hashBytes = getHashBytes();
-        StringBuilder sb = new StringBuilder();
-
-        String formatValue = capitalCase ? "%02X" : "%02x";
-        for (byte aByte : hashBytes) {
-            sb.append(String.format(formatValue, aByte & 0xFF));
-        }
-        return sb.toString();
+    @Deprecated
+    public String getHashHexString(boolean upperCase) {
+        return getHashResult().getHashHexString(upperCase);
     }
-
 
     /**
      * Appends byte to {@link #words} list
@@ -181,8 +182,7 @@ public class MD5Gen {
      * (part of MD5 algorithm)
      */
     private void calculate() {
-        resetBuffers();
-        for (int x_begin = 0; x_begin < words.size(); x_begin += 16) {
+        for (int xBegin = 0; xBegin < words.size(); xBegin += 16) {
             int aa = a;
             int bb = b;
             int cc = c;
@@ -209,12 +209,12 @@ public class MD5Gen {
                     k = (byte) ((7 * i) & 0xf);
                 }
 
-                int valueToRotate = a + funResult + words.get(x_begin + k) + T_VALUES[i];
-                int rotate_result = Integer.rotateLeft(valueToRotate, S_VALUES[i]);
+                int valueToRotate = a + funResult + words.get(xBegin + k) + T_VALUES[i];
+                int rotateResult = Integer.rotateLeft(valueToRotate, S_VALUES[i]);
                 a = d;
                 d = c;
                 c = b;
-                b += rotate_result;
+                b += rotateResult;
             }
 
             a += aa;
