@@ -58,6 +58,15 @@ public class MD5GenUnitTests {
     }
 
     @Test
+    public void getHashStringCorrectHashValueFifthTest() {
+        byte[] md5GenInput = ("helloWhelloWhelloWhelloWhelloWhelloWhelloWhelloWhelloWhelloWhelloWhelloWorld1sorld1so" +
+                "rld1sorld1sorld1sorld1sorld1sorld1sorld1sorld1sorld1sorld1so").getBytes();
+        String expected = "bc2c76bd36fccf63d548d32cea02a599";
+        String actual = new MD5Gen().update(md5GenInput).getHashHexString(false);
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void getHashStringTwiceTest() {
         MD5Gen gen = new MD5Gen();
         byte[] md5GenInputFirst = "hello".getBytes();
