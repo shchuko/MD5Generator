@@ -288,4 +288,50 @@ public class MD5Gen {
     static int funI(int x, int y, int z) {
         return y ^ ((~z) | x);
     }
+
+    /**
+     * Get {@link #a} buffer value
+     * @return {@link #a} buffer value
+     */
+    int getBufA() {
+        return a;
+    }
+
+    /**
+     * Get {@link #b} buffer value
+     * @return {@link #b} buffer value
+     */
+    int getBufB() {
+        return b;
+    }
+
+    /**
+     * Get {@link #c} buffer value
+     * @return {@link #c} buffer value
+     */
+    int getBufC() {
+        return c;
+    }
+
+    /**
+     * Get {@link #d} buffer value
+     * @return {@link #d} buffer value
+     */
+    int getBufD() {
+        return d;
+    }
+
+    /**
+     * Restore buffer state from
+     * @param aBuf New value for {@link #a}
+     * @param bBuf New value for {@link #b}
+     * @param cBuf New value for {@link #c}
+     * @param dBuf New value for {@link #d}
+     */
+    void restoreBufferState(int aBuf, int bBuf, int cBuf, int dBuf) {
+        a = aBuf;
+        b = bBuf;
+        c = cBuf;
+        d = dBuf;
+    }
 }
