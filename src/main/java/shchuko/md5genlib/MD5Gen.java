@@ -161,7 +161,7 @@ public class MD5Gen {
      * @param bytesFilled Bytes already added to words
      * @param nextByteNum Second argument for {@link #addSingleByteToWords(byte, int)}
      */
-    void appendZeroPadding(int bytesFilled, int nextByteNum) {
+    void appendZeroPadding(long bytesFilled, int nextByteNum) {
         final byte ZERO_BYTE = 0;
         int newNextByteNum = nextByteNum;
         while (bytesFilled < (448 / 8) || (bytesFilled - (448 / 8)) % (512 / 8) != 0) {

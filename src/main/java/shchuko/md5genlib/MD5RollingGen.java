@@ -37,10 +37,8 @@ public class MD5RollingGen extends MD5Gen {
 
         int nextByteNum = super.fillWordsArrayFromBytes(partToAdd);
         nextByteNum = super.appendAlignedBitToWords(nextByteNum);
-        // Need to fix bug in super class - make argument long
-//        super.appendZeroPadding(bytesAdded + 1, nextByteNum);
-        super.appendZeroPadding((int) (bytesAdded + 1), nextByteNum);
-        appendLength(bytesAdded * 8);
+        super.appendZeroPadding(bytesAdded + 1, nextByteNum);
+        super.appendLength(bytesAdded * 8);
         calculate();
 
         MD5HashResult hashResult = super.getHashResult();
