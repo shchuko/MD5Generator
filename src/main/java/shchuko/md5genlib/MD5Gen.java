@@ -115,12 +115,8 @@ public class MD5Gen {
             int value = words.get(lastIndex) | ((byteVal & 0xFF) << 8 * byteNum);
             words.set(lastIndex, value);
         }
-        if (byteNum == 3) {
-            byteNum = 0;
-        } else {
-            ++byteNum;
-        }
-        return byteNum;
+
+        return byteNum == 3 ? 0 : byteNum + 1;
     }
 
     /**
