@@ -2,6 +2,9 @@ package shchuko.md5genlib;
 
 import java.util.ArrayList;
 
+/**
+ * MD5 hash generator
+ */
 public class MD5Gen {
     /** MD5 calculation buffer A initialisation value */
     private static final int A_CONST = 0x67452301;
@@ -60,99 +63,118 @@ public class MD5Gen {
      */
     public MD5Gen update(byte[] input) {
         resetAll();
-        fillWordsArrayFromBytes(input);
+
+        int nextByteNum = fillWordsArrayFromBytes(input);
+        nextByteNum = appendAlignedBitToWords(nextByteNum);
+        appendZeroPadding(input.length + 1, nextByteNum);
         appendLength(input.length * 8);
+
         calculate();
         return this;
     }
 
     /**
+     * Get hash result as {@link MD5HashResult} object
+     * @return {@link MD5HashResult} object
+     */
+    public MD5HashResult getHashResult() {
+        return new MD5HashResult(a, b, c, d);
+    }
+
+    /**
      * Get generated MD5-hash value in bytes representation. To generate hash invoke {@link #update(byte[])}
+     * @deprecated Use {@link #getHashResult()}.{@link MD5HashResult#getHashBytes() getHashBytes()} instead
      * @return MD5-hash value bytes
      */
+    @Deprecated
     public byte[] getHashBytes() {
-        byte[] resultBytes = new byte[16];
-        for (int i = 0; i < 4; ++i) {
-            resultBytes[i] = (byte) (a >>> 8 * i);
-            resultBytes[i + 4] = (byte) (b >>> 8 * i);
-            resultBytes[i + 8] = (byte) (c >>> 8 * i);
-            resultBytes[i + 12] = (byte) (d >>> 8 * i);
-        }
-        return resultBytes;
-
+        return getHashResult().getHashBytes();
     }
 
     /**
      * Get generated MD5-hash in HEX format.
      * To generate hash invoke {@link #update(byte[])}
-     * @param capitalCase True: capital case HEX, false: lower case HEX
+     * @deprecated Use {@link #getHashResult()}.{@link MD5HashResult#getHashHexString(boolean) getHashHexString(boolean)}
+     * instead
+     * @param upperCase True: capital case HEX, false: lower case HEX
      * @return String with HEX hash value
      */
-    public String getHashHexString(boolean capitalCase) {
-        byte[] hashBytes = getHashBytes();
-        StringBuilder sb = new StringBuilder();
-
-        String formatValue = capitalCase ? "%02X" : "%02x";
-        for (byte aByte : hashBytes) {
-            sb.append(String.format(formatValue, aByte & 0xFF));
-        }
-        return sb.toString();
+    @Deprecated
+    public String getHashHexString(boolean upperCase) {
+        return getHashResult().getHashHexString(upperCase);
     }
 
-
     /**
-     * Appends byte to {@link #words} list
+     * Append byte to {@link #words} list
      * @param byteVal Byte to append
-     * @param byteNum Byte place number in int32 variable
-     * @return New value for byteNum (passed as argument)
+     * @param nextByteNum Byte place number in int32 variable
+     * @return New value for nextByteNum (passed as argument)
      */
-    private int appendByteToWords(byte byteVal, int byteNum) {
-        if (byteNum == 0) {
+    int addSingleByteToWords(byte byteVal, int nextByteNum) {
+        if (nextByteNum == 0) {
             words.add(byteVal & 0xFF);
         } else {
             int lastIndex = words.size() - 1;
-            int value = words.get(lastIndex) | ((byteVal & 0xFF) << 8 * byteNum);
+            int value = words.get(lastIndex) | ((byteVal & 0xFF) << 8 * nextByteNum);
             words.set(lastIndex, value);
         }
-        if (byteNum == 3) {
-            byteNum = 0;
-        } else {
-            ++byteNum;
-        }
-        return byteNum;
+
+        return nextByteNum == 3 ? 0 : nextByteNum + 1;
     }
 
     /**
-     * Fill {@link #words} list from bytes array, add zero-padding (part of MD5 algorithm)
-     * @param bytes Input bytes
+     * Append bytes to {@link #words} list
+     * @param bytes Bytes to append
+     * @param nextByteNum Second argument for {@link #addSingleByteToWords(byte, int)}
+     * @return new value for nextByteNum (passed as argument)
      */
-    private void fillWordsArrayFromBytes(byte[] bytes) {
-        // Byte of word we're filling next [3..0]. Starting from the 3rd
-        int byteNum = 0;
-        // Storing input data
+    int appendBytesToWordsArray(byte[] bytes, int nextByteNum) {
+        int newNextByteNum = nextByteNum;
         for (byte b : bytes) {
-            byteNum = appendByteToWords(b,
-                    byteNum);
+            newNextByteNum = addSingleByteToWords(b, newNextByteNum);
         }
+        return newNextByteNum;
+    }
 
-        // Adding 1-bit to the end, padded with zeroes to full byte
+    /**
+     * Fill {@link #words} list from bytes array
+     * @param bytes Bytes to fill
+     * @return new value for nextByteNum (second argument for {@link #addSingleByteToWords(byte, int)})
+     */
+    int fillWordsArrayFromBytes(byte[] bytes) {
+        words.clear();
+        return appendBytesToWordsArray(bytes, 0);
+    }
+
+    /**
+     * Append 0b10000000 byte to {@link #words} list
+     * @param nextByteNum Second argument for {@link #addSingleByteToWords(byte, int)}
+     * @return new value for nextByteNum (passed as argument)
+     */
+    int appendAlignedBitToWords(int nextByteNum) {
         final byte ONE_PADDED_BIT = (byte) 0b10000000;
-        byteNum = appendByteToWords(ONE_PADDED_BIT, byteNum);
+        return addSingleByteToWords(ONE_PADDED_BIT, nextByteNum);
+    }
 
-        // Adding zero padding
-        long bytesFilled = bytes.length + 1;
+    /**
+     * Append zero padding to {@link #words} list
+     * @param bytesFilled Bytes already added to words
+     * @param nextByteNum Second argument for {@link #addSingleByteToWords(byte, int)}
+     */
+    void appendZeroPadding(long bytesFilled, int nextByteNum) {
         final byte ZERO_BYTE = 0;
-        while (bytesFilled < (448 / 8) || (bytesFilled - (448 / 8)) % 512 != 0) {
-            byteNum = appendByteToWords(ZERO_BYTE, byteNum);
+        int newNextByteNum = nextByteNum;
+        while (bytesFilled < (448 / 8) || (bytesFilled - (448 / 8)) % (512 / 8) != 0) {
+            newNextByteNum = addSingleByteToWords(ZERO_BYTE, newNextByteNum);
             ++bytesFilled;
         }
     }
 
     /**
-     * Append length value to {@link #words} (part of MD5 algorithm)
+     * Append length value to {@link #words}
      * @param length INT64 length value
      */
-    private void appendLength(long length)  {
+    void appendLength(long length)  {
         words.add((int) length);
         words.add((int) (length >>> (4 * 8)));
     }
@@ -160,7 +182,7 @@ public class MD5Gen {
     /**
      * Reset calculation buffers {@link #a}, {@link #b}, {@link #c}, {@link #d}
      */
-    private void resetBuffers() {
+    void resetBuffers() {
         a = A_CONST;
         b = B_CONST;
         c = C_CONST;
@@ -171,7 +193,7 @@ public class MD5Gen {
      * Reset calculation buffers {@link #a}, {@link #b}, {@link #c}, {@link #d}, empty {@link #words} list.
      * Prepare for new calculation
      */
-    private void resetAll() {
+    void resetAll() {
         resetBuffers();
         words.clear();
     }
@@ -180,9 +202,8 @@ public class MD5Gen {
      * Calculate MD5 hash from {@link #words}. Result stored in {@link #a}, {@link #b}, {@link #c}, {@link #d}.
      * (part of MD5 algorithm)
      */
-    private void calculate() {
-        resetBuffers();
-        for (int x_begin = 0; x_begin < words.size(); x_begin += 16) {
+    void calculate() {
+        for (int xBegin = 0; xBegin < words.size(); xBegin += 16) {
             int aa = a;
             int bb = b;
             int cc = c;
@@ -209,12 +230,12 @@ public class MD5Gen {
                     k = (byte) ((7 * i) & 0xf);
                 }
 
-                int valueToRotate = a + funResult + words.get(x_begin + k) + T_VALUES[i];
-                int rotate_result = Integer.rotateLeft(valueToRotate, S_VALUES[i]);
+                int valueToRotate = a + funResult + words.get(xBegin + k) + T_VALUES[i];
+                int rotateResult = Integer.rotateLeft(valueToRotate, S_VALUES[i]);
                 a = d;
                 d = c;
                 c = b;
-                b += rotate_result;
+                b += rotateResult;
             }
 
             a += aa;
@@ -231,7 +252,7 @@ public class MD5Gen {
      * @param z Third argument
      * @return 'F' function result
      */
-    private static int funF(int x, int y, int z) {
+    static int funF(int x, int y, int z) {
         return (x & y) | ((~x) & z);
     }
 
@@ -242,7 +263,7 @@ public class MD5Gen {
      * @param z Third argument
      * @return 'G' function result
      */
-    private static int funG(int x, int y, int z) {
+    static int funG(int x, int y, int z) {
         return (x & z) | ((~z) & y);
     }
 
@@ -253,7 +274,7 @@ public class MD5Gen {
      * @param z Third argument
      * @return 'H' function result
      */
-    private static int funH(int x, int y, int z) {
+    static int funH(int x, int y, int z) {
         return x ^ y ^ z;
     }
 
@@ -264,7 +285,53 @@ public class MD5Gen {
      * @param z Third argument
      * @return 'I' function result
      */
-    private static int funI(int x, int y, int z) {
+    static int funI(int x, int y, int z) {
         return y ^ ((~z) | x);
+    }
+
+    /**
+     * Get {@link #a} buffer value
+     * @return {@link #a} buffer value
+     */
+    int getBufA() {
+        return a;
+    }
+
+    /**
+     * Get {@link #b} buffer value
+     * @return {@link #b} buffer value
+     */
+    int getBufB() {
+        return b;
+    }
+
+    /**
+     * Get {@link #c} buffer value
+     * @return {@link #c} buffer value
+     */
+    int getBufC() {
+        return c;
+    }
+
+    /**
+     * Get {@link #d} buffer value
+     * @return {@link #d} buffer value
+     */
+    int getBufD() {
+        return d;
+    }
+
+    /**
+     * Restore buffer state from
+     * @param aBuf New value for {@link #a}
+     * @param bBuf New value for {@link #b}
+     * @param cBuf New value for {@link #c}
+     * @param dBuf New value for {@link #d}
+     */
+    void restoreBufferState(int aBuf, int bBuf, int cBuf, int dBuf) {
+        a = aBuf;
+        b = bBuf;
+        c = cBuf;
+        d = dBuf;
     }
 }
