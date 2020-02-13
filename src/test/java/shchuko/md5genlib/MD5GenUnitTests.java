@@ -79,5 +79,7 @@ public class MD5GenUnitTests {
                 .update(md5GenInput)
                 .getHashResult()
                 .getHashHexString(false);
+
+        assertEquals(expected, actual);
     }
 }
