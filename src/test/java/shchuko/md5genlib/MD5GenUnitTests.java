@@ -71,4 +71,13 @@ public class MD5GenUnitTests {
         assertEquals(expectedSecond, actualSecond);
     }
 
+    @Test
+    public void getHashResultTest() {
+        byte[] md5GenInput = "helloWorld1s".getBytes();
+        String expected = "b11b235896517f8ca09a1035e0d5702b";
+        String actual = new MD5Gen()
+                .update(md5GenInput)
+                .getHashResult()
+                .getHashHexString(false);
+    }
 }
