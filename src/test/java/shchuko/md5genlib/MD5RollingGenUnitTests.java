@@ -61,6 +61,7 @@ public class MD5RollingGenUnitTests {
         byte[] md5GenInputSecond = "helloWorld1s".getBytes();
         String expectedSecond = "b11b235896517f8ca09a1035e0d5702b";
         String actualSecond = gen.update(md5GenInputSecond).getHashResult().getHashHexString(false);
+        assertEquals(expectedSecond, actualSecond);
     }
 
     @Test
@@ -76,6 +77,7 @@ public class MD5RollingGenUnitTests {
         byte[] md5GenInputSecond = "helloWorld1s".getBytes();
         String expectedSecond = "b11b235896517f8ca09a1035e0d5702b";
         String actualSecond = gen.addBytesPart(md5GenInputSecond).getHashResult().getHashHexString(false);
+        assertEquals(expectedSecond, actualSecond);
     }
 
     @Test
@@ -91,5 +93,6 @@ public class MD5RollingGenUnitTests {
         // Hash for "hellohelloWorld1s"
         String expectedSecond = "71c5c1bd08689e40ebf27e1e1fac56b2";
         String actualSecond = gen.addBytesPart(md5GenInputSecond).getHashResult().getHashHexString(false);
+        assertEquals(expectedSecond, actualSecond);
     }
 }
