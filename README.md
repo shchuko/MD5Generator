@@ -3,16 +3,16 @@
 
 # Simple MD5 hash generator library
 
-[Documentation](https://shchuko.github.io/JavaMD5Gen)
+[Documentation v0.3.2](https://shchuko.github.io/MD5Generator)
 
 Functionality:
 
 
-- Generate MD5-hash from bytes array, String object, file 
+-  Generate MD5-hash from bytes array, String object, file 
 
 
-- Return hash result as hex-view string, array of bytes
+-  Return hash result as hex-view string, array of bytes
 
 
-- Do rolling-calculation to prevent memory overflow 
+-  Do rolling-calculation to prevent memory overflow 
 
