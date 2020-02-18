@@ -163,10 +163,13 @@ public class MD5Gen {
      */
     void appendZeroPadding(long bytesFilled, int nextByteNum) {
         final byte ZERO_BYTE = 0;
+
+        long bytesFilledNow = bytesFilled;
         int newNextByteNum = nextByteNum;
-        while (bytesFilled < (448 / 8) || (bytesFilled - (448 / 8)) % (512 / 8) != 0) {
+
+        while (bytesFilledNow < (448 / 8) || (bytesFilledNow - (448 / 8)) % (512 / 8) != 0) {
             newNextByteNum = addSingleByteToWords(ZERO_BYTE, newNextByteNum);
-            ++bytesFilled;
+            ++bytesFilledNow;
         }
     }
 
