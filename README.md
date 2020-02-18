@@ -2,3 +2,13 @@
 [![Build Status](https://travis-ci.com/shchuko/JavaMD5Gen.svg?branch=master)](https://travis-ci.com/shchuko/JavaMD5Gen)
 
 # Simple MD5 hash generator library
+
+Functionality:
+
+- Generate MD5-hash from bytes array, String object, file 
+
+- Return hash result as hex-view string, array of bytes
+
+- Do rolling-calculation to prevent memory overflow 
+
+For more information check documentation in release files
