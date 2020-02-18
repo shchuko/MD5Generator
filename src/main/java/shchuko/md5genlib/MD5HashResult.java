@@ -1,5 +1,8 @@
 package shchuko.md5genlib;
 
+/**
+ * MD5 hash result interpreter
+ */
 public class MD5HashResult {
     /** MD5 calculation buffer A result */
     private int a;
