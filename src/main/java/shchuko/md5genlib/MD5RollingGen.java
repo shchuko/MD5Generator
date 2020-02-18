@@ -2,6 +2,9 @@ package shchuko.md5genlib;
 
 import java.util.*;
 
+/**
+ * MD5 hash generator based on rolling step-by-step algorithm. Use it to prevent heap overflow
+ */
 public class MD5RollingGen extends MD5Gen {
     private LinkedList<Byte> bytesQueue = new LinkedList<>();
     private long bytesAdded = 0;
