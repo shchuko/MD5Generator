@@ -4,7 +4,7 @@
 
 # Simple MD5 hash generator library
 
-[Documentation v0.3.2](https://shchuko.github.io/MD5Generator)
+[Documentation v0.3.4](https://shchuko.github.io/MD5Generator)
 
 Functionality:
 

@@ -2,10 +2,10 @@ plugins {
     id 'java'
 }
 
-group 'org.example'
-version 'v0.3.2'
+group 'shchuko.md5genlib'
+version 'v0.3.4'
 
-sourceCompatibility = 11
+sourceCompatibility = 10
 
 repositories {
     mavenCentral()
@@ -15,8 +15,11 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
-wrapper {
-    gradleVersion = "2.2.1"
+if (rootProject == project) {
+    wrapper {
+        jarFile = "${project.projectDir}/gradle/wrapper/gradle-wrapper.jar"
+        gradleVersion = "6.1.1"
+    }
 }
 
 test {
