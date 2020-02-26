@@ -34,8 +34,8 @@ public class MD5GenUtils {
      * @throws IOException If file couldn't be opened
      */
     public static MD5HashResult getHashOfFile(Path path) throws IOException {
-        // 32 MiB chunk size max
-        final int BUFFER_SIZE = 1024 * 1024 * 32;
+        // 256 KiB chunk size max
+        final int BUFFER_SIZE = 1024 * 256;
 
         MD5RollingGen gen = new MD5RollingGen();
 

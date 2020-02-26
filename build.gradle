@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'shchuko.md5genlib'
-version 'v0.3.4'
+version 'v0.3.5'
 
 sourceCompatibility = 10
 
